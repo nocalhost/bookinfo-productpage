@@ -34,17 +34,7 @@ jobs:
           else
             docker build . --file Dockerfile
           fi
-  login:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Login to Docker Registry
-        uses: docker/login-action@v1
-        with:
-          registry: codingcorp-docker.pkg.coding.net
-          username: ${{ secrets.BOOKINFO_REPO_USERNAME }}
-          password: ${{ secrets.BOOKINFO_REPO_PASSWORD }}
-  
+          
   # Push image to Docker Registry
   push:
     # Ensure test job passes before pushing image.
@@ -56,6 +46,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Login Docker Registry
+        run: echo ${{ secrets.BOOKINFO_REPO_PASSWORD }} | docker login -u ${{ secrets.BOOKINFO_REPO_USERNAME }} --password-stdin codingcorp-docker.pkg.coding.net
+        
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME
         
