@@ -62,7 +62,7 @@ jobs:
         
       - name: Push image to GitHub Container Registry
         run: |
-          IMAGE_ID=docker.pkg.github.com/nocalhost/productpage
+          IMAGE_ID=docker.pkg.github.com/nocalhost/nocalhost-productpage/productpage
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
