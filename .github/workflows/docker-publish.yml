@@ -45,8 +45,7 @@ jobs:
           username: ${{ secrets.BOOKINFO_REPO_USERNAME }}
           password: ${{ secrets.BOOKINFO_REPO_PASSWORD }}
   
-  # Push image to GitHub Packages.
-  # See also https://docs.docker.com/docker-hub/builds/
+  # Push image to Docker Registry
   push:
     # Ensure test job passes before pushing image.
     needs: test
@@ -60,7 +59,7 @@ jobs:
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME
         
-      - name: Push image to GitHub Container Registry
+      - name: Push image to Docker Registry
         run: |
           IMAGE_ID=codingcorp-docker.pkg.coding.net/nocalhost/bookinfo/productpage
 
