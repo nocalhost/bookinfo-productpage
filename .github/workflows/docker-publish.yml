@@ -38,12 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
-        name: Login to GitHub Packages Docker Registry
+        name: Login to Docker Registry
         uses: docker/login-action@v1
         with:
-          registry: docker.pkg.github.com
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: codingcorp-docker.pkg.coding.net
+          username: ${{ secrets.BOOKINFO_REPO_USERNAME }}
+          password: ${{ secrets.BOOKINFO_REPO_PASSWORD }}
   
   # Push image to GitHub Packages.
   # See also https://docs.docker.com/docker-hub/builds/
@@ -62,7 +62,7 @@ jobs:
         
       - name: Push image to GitHub Container Registry
         run: |
-          IMAGE_ID=docker.pkg.github.com/nocalhost/nocalhost-productpage/productpage
+          IMAGE_ID=codingcorp-docker.pkg.coding.net/nocalhost/bookinfo/productpage
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
