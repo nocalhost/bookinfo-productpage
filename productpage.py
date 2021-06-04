@@ -121,7 +121,7 @@ tracer = Tracer(
     service_name='productpage',
     reporter=NullReporter(),
     sampler=ConstSampler(decision=True),
-    extra_codecs={Format.HTTP_HEADERS: B3Codec()}
+    # extra_codecs={Format.HTTP_HEADERS: B3Codec()}
 )
 
 
