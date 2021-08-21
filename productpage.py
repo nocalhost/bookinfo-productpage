@@ -33,6 +33,7 @@ import logging
 import requests
 import os
 import asyncio
+import pydevd_pycharm
 
 # These two lines enable debugging at httplib level (requests->urllib3->http.client)
 # You will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
@@ -43,6 +44,10 @@ except ImportError:
     # Python 2
     import httplib as http_client
 http_client.HTTPConnection.debuglevel = 1
+
+REMOTE_DEBUG = os.getenv('REMOTE_DEBUG')
+if REMOTE_DEBUG == '1':
+    pydevd_pycharm.settrace('127.0.0.1', port=9009, stdoutToServer=True, stderrToServer=True)
 
 app = Flask(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -58,11 +63,19 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 Bootstrap(app)
 
 servicesDomain = "" if (os.environ.get("SERVICES_DOMAIN") is None) else "." + os.environ.get("SERVICES_DOMAIN")
+productHostname = "productpage" if (os.environ.get("PRODUCTPAGE_HOSTNAME") is None) else os.environ.get("PRODUCTPAGE_HOSTNAME")
+authorsHostname = "authors" if (os.environ.get("AUTHORS_HOSTNAME") is None) else os.environ.get("AUTHORS_HOSTNAME")
 detailsHostname = "details" if (os.environ.get("DETAILS_HOSTNAME") is None) else os.environ.get("DETAILS_HOSTNAME")
 ratingsHostname = "ratings" if (os.environ.get("RATINGS_HOSTNAME") is None) else os.environ.get("RATINGS_HOSTNAME")
 reviewsHostname = "reviews" if (os.environ.get("REVIEWS_HOSTNAME") is None) else os.environ.get("REVIEWS_HOSTNAME")
 
 flood_factor = 0 if (os.environ.get("FLOOD_FACTOR") is None) else int(os.environ.get("FLOOD_FACTOR"))
+
+authors = {
+    "name": "http://{0}{1}:9080".format(authorsHostname, servicesDomain),
+    "endpoint": "authors",
+    "children": []
+}
 
 details = {
     "name": "http://{0}{1}:9080".format(detailsHostname, servicesDomain),
@@ -83,15 +96,16 @@ reviews = {
 }
 
 productpage = {
-    "name": "http://{0}{1}:9080".format(detailsHostname, servicesDomain),
-    "endpoint": "details",
-    "children": [details, reviews]
+    "name": "http://{0}{1}:9080".format(productHostname, servicesDomain),
+    "endpoint": "productpage",
+    "children": [details, reviews, authors]
 }
 
 service_dict = {
     "productpage": productpage,
     "details": details,
     "reviews": reviews,
+    "authors": authors,
 }
 
 # A note on distributed tracing:
@@ -302,6 +316,7 @@ def front():
     user = session.get('user', '')
     product = getProduct(product_id)
     detailsStatus, details = getProductDetails(product_id, headers)
+    authorsStatus, authors = getProductAuthors(product_id, headers)
 
     if flood_factor > 0:
         floodReviews(product_id, headers)
@@ -311,9 +326,11 @@ def front():
         'productpage.html',
         detailsStatus=detailsStatus,
         reviewsStatus=reviewsStatus,
+        authorsStatus=authorsStatus,
         product=product,
         details=details,
         reviews=reviews,
+        authors=authors,
         user=user)
 
 
@@ -365,6 +382,17 @@ def getProduct(product_id):
     else:
         return products[product_id]
 
+def getProductAuthors(product_id, headers):
+    try:
+        url = authors['name'] + "/" + authors['endpoint'] + "/" + str(product_id)
+        res = requests.get(url, headers=headers, timeout=3.0)
+    except BaseException:
+        res = None
+    if res and res.status_code == 200:
+        return 200, res.json()
+    else:
+        status = res.status_code if res is not None and res.status_code else 500
+        return status, {'error': 'Sorry, product authors are currently unavailable for this book.'}
 
 def getProductDetails(product_id, headers):
     try:
@@ -427,4 +455,4 @@ if __name__ == '__main__':
     logging.info("start at port %s" % (p))
     # Python does not work on an IPv6 only host
     # https://bugs.python.org/issue10414
-    app.run(host='0.0.0.0', port=p, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=p)
