@@ -155,5 +155,23 @@
       {% endif %}
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      {% if authorsStatus == 200: %}
+          <h4 class="text-center text-primary">Book Authors</h4>
+          {% for author in authors.authors %}
+              <blockquote>
+                  <p><b>{{ author.name }}</b>: {{ author.desc }}</p>
+              </blockquote>
+          {% endfor %}
+      {% else %}
+          <h4 class="text-center text-primary">Error fetching product authors!</h4>
+          {% if authors: %}
+              <p>{{ authors.error }}</p>
+          {% endif %}
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}
