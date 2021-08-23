@@ -455,4 +455,6 @@ if __name__ == '__main__':
     logging.info("start at port %s" % (p))
     # Python does not work on an IPv6 only host
     # https://bugs.python.org/issue10414
-    app.run(host='0.0.0.0', port=p)
+    # PyCharm does not work with use_reloader=True
+    # https://stackoverflow.com/questions/27087315/pycharm-and-flask-autoreload-and-breakpoints-not-working
+    app.run(host='0.0.0.0', port=p, debug=True, use_reloader=False)
