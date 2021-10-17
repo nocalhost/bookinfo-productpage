@@ -457,4 +457,4 @@ if __name__ == '__main__':
     # https://bugs.python.org/issue10414
     # PyCharm does not work with use_reloader=True
     # https://stackoverflow.com/questions/27087315/pycharm-and-flask-autoreload-and-breakpoints-not-working
-    app.run(host='0.0.0.0', port=p, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=p, debug=True, use_reloader=True)
