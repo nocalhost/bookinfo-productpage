@@ -45,8 +45,8 @@ except ImportError:
     import httplib as http_client
 http_client.HTTPConnection.debuglevel = 1
 
-REMOTE_DEBUG = os.getenv('REMOTE_DEBUG')
-if REMOTE_DEBUG == '1':
+NH_DEBUG = os.getenv('NH_DEBUG') == "True"
+if NH_DEBUG:
     pydevd_pycharm.settrace('127.0.0.1', port=9009, stdoutToServer=True, stderrToServer=True)
 
 app = Flask(__name__)
@@ -143,6 +143,7 @@ def trace():
     '''
     Function decorator that creates opentracing span from incoming b3 headers
     '''
+
     def decorator(f):
         def wrapper(*args, **kwargs):
             request = stack.top.request
@@ -169,8 +170,10 @@ def trace():
             with span_in_context(span):
                 r = f(*args, **kwargs)
                 return r
+
         wrapper.__name__ = f.__name__
         return wrapper
+
     return decorator
 
 
@@ -457,4 +460,4 @@ if __name__ == '__main__':
     # https://bugs.python.org/issue10414
     # PyCharm does not work with use_reloader=True
     # https://stackoverflow.com/questions/27087315/pycharm-and-flask-autoreload-and-breakpoints-not-working
-    app.run(host='0.0.0.0', port=p, debug=True, use_reloader=True)
+    app.run(host='0.0.0.0', port=p, debug=True, use_reloader=not NH_DEBUG)
