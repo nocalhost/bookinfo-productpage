@@ -1,4 +1,4 @@
 #!/bin/bash
 
-export REMOTE_DEBUG=1
+export NH_DEBUG=True
 python productpage.py 9080
