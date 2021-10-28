@@ -45,6 +45,10 @@ except ImportError:
 http_client.HTTPConnection.debuglevel = 1
 
 NH_DEBUG = os.getenv('NH_DEBUG') == "True"
+if NH_DEBUG and os.getenv('NH_PLUGIN') != "VSCode":
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('127.0.0.1', port=9009,
+                            stdoutToServer=True, stderrToServer=True)
 
 app = Flask(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
