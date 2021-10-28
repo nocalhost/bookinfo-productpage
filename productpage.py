@@ -33,7 +33,6 @@ import logging
 import requests
 import os
 import asyncio
-import pydevd_pycharm
 
 # These two lines enable debugging at httplib level (requests->urllib3->http.client)
 # You will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
@@ -46,8 +45,6 @@ except ImportError:
 http_client.HTTPConnection.debuglevel = 1
 
 NH_DEBUG = os.getenv('NH_DEBUG') == "True"
-if NH_DEBUG:
-    pydevd_pycharm.settrace('127.0.0.1', port=9009, stdoutToServer=True, stderrToServer=True)
 
 app = Flask(__name__)
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -62,14 +59,21 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 Bootstrap(app)
 
-servicesDomain = "" if (os.environ.get("SERVICES_DOMAIN") is None) else "." + os.environ.get("SERVICES_DOMAIN")
-productHostname = "productpage" if (os.environ.get("PRODUCTPAGE_HOSTNAME") is None) else os.environ.get("PRODUCTPAGE_HOSTNAME")
-authorsHostname = "authors" if (os.environ.get("AUTHORS_HOSTNAME") is None) else os.environ.get("AUTHORS_HOSTNAME")
-detailsHostname = "details" if (os.environ.get("DETAILS_HOSTNAME") is None) else os.environ.get("DETAILS_HOSTNAME")
-ratingsHostname = "ratings" if (os.environ.get("RATINGS_HOSTNAME") is None) else os.environ.get("RATINGS_HOSTNAME")
-reviewsHostname = "reviews" if (os.environ.get("REVIEWS_HOSTNAME") is None) else os.environ.get("REVIEWS_HOSTNAME")
+servicesDomain = "" if (os.environ.get("SERVICES_DOMAIN")
+                        is None) else "." + os.environ.get("SERVICES_DOMAIN")
+productHostname = "productpage" if (os.environ.get(
+    "PRODUCTPAGE_HOSTNAME") is None) else os.environ.get("PRODUCTPAGE_HOSTNAME")
+authorsHostname = "authors" if (os.environ.get(
+    "AUTHORS_HOSTNAME") is None) else os.environ.get("AUTHORS_HOSTNAME")
+detailsHostname = "details" if (os.environ.get(
+    "DETAILS_HOSTNAME") is None) else os.environ.get("DETAILS_HOSTNAME")
+ratingsHostname = "ratings" if (os.environ.get(
+    "RATINGS_HOSTNAME") is None) else os.environ.get("RATINGS_HOSTNAME")
+reviewsHostname = "reviews" if (os.environ.get(
+    "REVIEWS_HOSTNAME") is None) else os.environ.get("REVIEWS_HOSTNAME")
 
-flood_factor = 0 if (os.environ.get("FLOOD_FACTOR") is None) else int(os.environ.get("FLOOD_FACTOR"))
+flood_factor = 0 if (os.environ.get("FLOOD_FACTOR") is None) else int(
+    os.environ.get("FLOOD_FACTOR"))
 
 authors = {
     "name": "http://{0}{1}:9080".format(authorsHostname, servicesDomain),
@@ -385,9 +389,11 @@ def getProduct(product_id):
     else:
         return products[product_id]
 
+
 def getProductAuthors(product_id, headers):
     try:
-        url = authors['name'] + "/" + authors['endpoint'] + "/" + str(product_id)
+        url = authors['name'] + "/" + \
+            authors['endpoint'] + "/" + str(product_id)
         res = requests.get(url, headers=headers, timeout=3.0)
     except BaseException:
         res = None
@@ -397,9 +403,11 @@ def getProductAuthors(product_id, headers):
         status = res.status_code if res is not None and res.status_code else 500
         return status, {'error': 'Sorry, product authors are currently unavailable for this book.'}
 
+
 def getProductDetails(product_id, headers):
     try:
-        url = details['name'] + "/" + details['endpoint'] + "/" + str(product_id)
+        url = details['name'] + "/" + \
+            details['endpoint'] + "/" + str(product_id)
         res = requests.get(url, headers=headers, timeout=3.0)
     except BaseException:
         res = None
@@ -415,7 +423,8 @@ def getProductReviews(product_id, headers):
     # TODO: Figure out how to achieve the same effect using Envoy retries/timeouts
     for _ in range(2):
         try:
-            url = reviews['name'] + "/" + reviews['endpoint'] + "/" + str(product_id)
+            url = reviews['name'] + "/" + \
+                reviews['endpoint'] + "/" + str(product_id)
             res = requests.get(url, headers=headers, timeout=3.0)
         except BaseException:
             res = None
@@ -427,7 +436,8 @@ def getProductReviews(product_id, headers):
 
 def getProductRatings(product_id, headers):
     try:
-        url = ratings['name'] + "/" + ratings['endpoint'] + "/" + str(product_id)
+        url = ratings['name'] + "/" + \
+            ratings['endpoint'] + "/" + str(product_id)
         res = requests.get(url, headers=headers, timeout=3.0)
     except BaseException:
         res = None
